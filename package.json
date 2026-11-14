@@ -1,0 +1,9 @@
+{
+  "name": "dexter-new-blood",
+  "version": "1.0.0",
+  "description": "Dexter: New Blood S01 Player",
+  "main": "index.html",
+  "packageType": "app",
+  "appName": "Dexter: New Blood",
+  "appPath": "index.html"
+}
