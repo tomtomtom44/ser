@@ -78,6 +78,12 @@
       z-index: 10000;
       cursor: pointer;
       border: 1px solid #444;
+      opacity: 1;
+      transition: opacity 0.5s ease;
+    }
+    #close-hint.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
   </style>
 </head>
@@ -112,8 +118,10 @@
     const container = document.getElementById("episodes");
     const overlay = document.getElementById("player-overlay");
     const frame = document.getElementById("player-frame");
+    const closeHint = document.getElementById("close-hint");
     let buttons = [];
     let lastFocusedIndex = 0;
+    let hideTimeout = null;
 
     EPISODE_TITLES.forEach((title, index) => {
       const epNum = index + 1;
@@ -131,16 +139,29 @@
     // Automatické zaměření 1. dílu pro ovladač TV
     if (buttons.length > 0) buttons[0].focus();
 
+    function showCloseHintTemporarily() {
+      closeHint.classList.remove("hidden");
+      if (hideTimeout) clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        closeHint.classList.add("hidden");
+      }, 5000);
+    }
+
     function openPlayer(episode) {
       frame.src = `https://embedmaster.link/tv/${IMDB_ID}/${SEASON}/${episode}`;
       overlay.style.display = "block";
+      showCloseHintTemporarily();
     }
 
     function closePlayer() {
+      if (hideTimeout) clearTimeout(hideTimeout);
       overlay.style.display = "none";
       frame.src = "";
       if (buttons[lastFocusedIndex]) buttons[lastFocusedIndex].focus();
     }
+
+    // Znovu zobrazit tlačítko při pohybu myší / kurzorem
+    overlay.addEventListener("mousemove", showCloseHintTemporarily);
 
     // Ovládání šipkami a tlačítkem Zpět na Samsung ovladači
     document.addEventListener("keydown", (e) => {
