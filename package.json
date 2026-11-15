@@ -1,9 +1,9 @@
 {
-  "name": "dexter-new-blood",
+  "name": "serosefix",
   "version": "1.0.0",
-  "description": "Dexter: New Blood S01 Player",
+  "description": "Serosefix Player",
   "main": "index.html",
-  "packageType": "app",
-  "appName": "Dexter: New Blood",
-  "appPath": "index.html"
+  "packageType": "website",
+  "appName": "Serosefix",
+  "appPath": "https://tomtomtom44.github.io/ser/"
 }
