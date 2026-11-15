@@ -57,33 +57,48 @@
     #player-overlay {
       display: none;
       position: fixed;
-      inset: 0;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
       background: #000;
       z-index: 9999;
     }
     #player-frame {
+      position: relative;
       width: 100%;
       height: 100%;
       border: none;
+      z-index: 1;
     }
     #close-hint {
       position: fixed;
-      top: 16px;
-      right: 24px;
-      background: rgba(0, 0, 0, 0.75);
+      top: 24px;
+      right: 32px;
+      background: rgba(20, 20, 20, 0.9);
       color: #fff;
-      padding: 10px 18px;
-      border-radius: 8px;
-      font-size: 16px;
-      z-index: 10000;
+      padding: 14px 22px;
+      border-radius: 10px;
+      font-size: 18px;
+      font-weight: bold;
+      z-index: 2147483647;
       cursor: pointer;
-      border: 1px solid #444;
+      border: 2px solid #e50914;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.8);
       opacity: 1;
       transition: opacity 0.5s ease;
     }
     #close-hint.hidden {
       opacity: 0;
       pointer-events: none;
+    }
+    #top-sensor {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 320px;
+      height: 100px;
+      z-index: 2147483646;
     }
   </style>
 </head>
@@ -95,6 +110,7 @@
   <div class="grid" id="episodes"></div>
 
   <div id="player-overlay">
+    <div id="top-sensor"></div>
     <button id="close-hint" onclick="closePlayer()">✕ Zavřít přehrávač (Zpět)</button>
     <iframe id="player-frame" allowfullscreen allow="autoplay; fullscreen"></iframe>
   </div>
@@ -119,6 +135,7 @@
     const overlay = document.getElementById("player-overlay");
     const frame = document.getElementById("player-frame");
     const closeHint = document.getElementById("close-hint");
+    const topSensor = document.getElementById("top-sensor");
     let buttons = [];
     let lastFocusedIndex = 0;
     let hideTimeout = null;
@@ -136,7 +153,6 @@
       buttons.push(btn);
     });
 
-    // Automatické zaměření 1. dílu pro ovladač TV
     if (buttons.length > 0) buttons[0].focus();
 
     function showCloseHintTemporarily() {
@@ -160,17 +176,21 @@
       if (buttons[lastFocusedIndex]) buttons[lastFocusedIndex].focus();
     }
 
-    // Znovu zobrazit tlačítko při pohybu myší / kurzorem
-    overlay.addEventListener("mousemove", showCloseHintTemporarily);
+    // Znovu zobrazit při najetí kurzorem do pravého horního rohu nebo stisku klávesy
+    topSensor.addEventListener("mousemove", showCloseHintTemporarily);
+    topSensor.addEventListener("mouseenter", showCloseHintTemporarily);
+    window.addEventListener("mousemove", showCloseHintTemporarily);
 
-    // Ovládání šipkami a tlačítkem Zpět na Samsung ovladači
     document.addEventListener("keydown", (e) => {
-      // Tlačítko Zpět na Samsung Tizen (10009) nebo Escape
-      if (e.keyCode === 10009 || e.key === "Escape" || e.key === "Backspace") {
-        if (overlay.style.display === "block") {
+      if (overlay.style.display === "block") {
+        // Tlačítko Zpět na Samsung Tizen (10009) nebo Escape
+        if (e.keyCode === 10009 || e.key === "Escape" || e.key === "Backspace") {
           e.preventDefault();
           closePlayer();
+          return;
         }
+        // Jakékoliv jiné tlačítko na ovladači znovu ukáže tlačítko Zavřít na 5s
+        showCloseHintTemporarily();
         return;
       }
 
