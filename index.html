@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dexter: New Blood - S01</title>
+  <title>Moje TV Videotéka</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -13,9 +13,14 @@
       padding: 40px 60px;
       overflow-x: hidden;
     }
+    .header-row {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      margin-bottom: 8px;
+    }
     h1 {
       font-size: 36px;
-      margin-bottom: 8px;
       color: #e50914;
     }
     p.subtitle {
@@ -23,16 +28,32 @@
       font-size: 18px;
       margin-bottom: 32px;
     }
+    .back-nav-btn {
+      background: #1a1d24;
+      border: 3px solid transparent;
+      border-radius: 10px;
+      padding: 10px 18px;
+      color: #fff;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .back-nav-btn:focus, .back-nav-btn:hover {
+      outline: none;
+      border-color: #e50914;
+      background: #252a34;
+    }
     .grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 18px;
     }
-    .ep-btn {
+    .card-btn {
       background: #1a1d24;
       border: 3px solid transparent;
       border-radius: 12px;
-      padding: 22px 26px;
+      padding: 24px 28px;
       color: #fff;
       text-align: left;
       font-size: 22px;
@@ -42,11 +63,18 @@
       align-items: center;
       transition: all 0.15s ease;
     }
-    .ep-btn:focus, .ep-btn:hover {
+    .card-btn:focus, .card-btn:hover {
       outline: none;
       border-color: #e50914;
       background: #252a34;
       transform: scale(1.02);
+    }
+    .card-meta {
+      display: block;
+      font-size: 15px;
+      color: #9ca3af;
+      margin-top: 6px;
+      font-weight: normal;
     }
     .ep-num {
       color: #e50914;
@@ -104,57 +132,212 @@
 </head>
 <body>
 
-  <h1>Dexter: New Blood</h1>
-  <p class="subtitle">1. série (10 epizod) • Vyber díl ovladačem a stiskni OK</p>
+  <div class="header-row">
+    <button id="nav-back-btn" class="back-nav-btn" style="display: none;" onclick="goBack()">← Zpět</button>
+    <h1 id="page-title">Moje videotéka</h1>
+  </div>
+  <p class="subtitle" id="page-subtitle">Vyber seriál ovladačem a stiskni OK</p>
 
-  <div class="grid" id="episodes"></div>
+  <div class="grid" id="content-grid"></div>
 
   <div id="player-overlay">
     <div id="top-sensor"></div>
     <button id="close-hint" onclick="closePlayer()">✕ Zavřít přehrávač (Zpět)</button>
-    <iframe id="player-frame" allowfullscreen allow="autoplay; fullscreen"></iframe>
+    <iframe id="player-frame" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay *; fullscreen *; picture-in-picture *; encrypted-media *"></iframe>
   </div>
 
   <script>
-    const IMDB_ID = "tt14164730";
-    const SEASON = 1;
-    const EPISODE_TITLES = [
-      "Cold Snap",
-      "Storm of Fuck",
-      "Smoke Signals",
-      "H is for Hero",
-      "Runaway",
-      "Too Many Tuna Sandwiches",
-      "Skin of Her Teeth",
-      "Unfair Game",
-      "The Family Business",
-      "Sins of the Father"
+    // Volitelné parametry přehrávače EmbedMaster
+    const PLAYER_PARAMS = "?skin=onyx&welcome_page=off&autoplay=on";
+
+    // =========================================================================
+    // DATABÁZE SERIÁLŮ (Sem můžeš v budoucnu snadno přidávat další seriály a série)
+    // =========================================================================
+    const SERIES_DATA = [
+      {
+        id: "tt14164730",
+        title: "Dexter: New Blood",
+        year: "2021–2022",
+        seasons: [
+          {
+            seasonNumber: 1,
+            episodes: [
+              "Cold Snap",
+              "Storm of Fuck",
+              "Smoke Signals",
+              "H is for Hero",
+              "Runaway",
+              "Too Many Tuna Sandwiches",
+              "Skin of Her Teeth",
+              "Unfair Game",
+              "The Family Business",
+              "Sins of the Father"
+            ]
+          }
+        ]
+      },
+      {
+        id: "tt17220216",
+        title: "Monarch: Legacy of Monsters",
+        year: "2023–2026",
+        seasons: [
+          {
+            seasonNumber: 1,
+            episodes: [
+              "Aftermath",
+              "Departure",
+              "Secrets and Lies",
+              "Parallels and Interiors",
+              "The Way Out",
+              "Terrifying Miracles",
+              "Will the Real May Please Stand Up?",
+              "Birthright",
+              "Axis Mundi",
+              "Beyond Logic"
+            ]
+          },
+          {
+            seasonNumber: 2,
+            episodes: [
+              "Epizoda 1",
+              "Epizoda 2",
+              "Epizoda 3",
+              "Epizoda 4",
+              "Epizoda 5",
+              "Epizoda 6",
+              "Epizoda 7",
+              "Epizoda 8",
+              "Epizoda 9",
+              "Epizoda 10"
+            ]
+          }
+        ]
+      }
     ];
 
-    const container = document.getElementById("episodes");
+    const pageTitle = document.getElementById("page-title");
+    const pageSubtitle = document.getElementById("page-subtitle");
+    const navBackBtn = document.getElementById("nav-back-btn");
+    const grid = document.getElementById("content-grid");
     const overlay = document.getElementById("player-overlay");
     const frame = document.getElementById("player-frame");
     const closeHint = document.getElementById("close-hint");
     const topSensor = document.getElementById("top-sensor");
-    let buttons = [];
-    let lastFocusedIndex = 0;
+
+    // Stav navigace: 'series' -> 'seasons' -> 'episodes'
+    let currentView = "series";
+    let selectedSeriesIndex = 0;
+    let selectedSeasonIndex = 0;
+    let lastEpisodeIndex = 0;
+
+    let focusableElements = [];
     let hideTimeout = null;
 
-    EPISODE_TITLES.forEach((title, index) => {
-      const epNum = index + 1;
-      const btn = document.createElement("button");
-      btn.className = "ep-btn";
-      btn.innerHTML = `<span><span class="ep-num">E${epNum.toString().padStart(2, '0')}</span>${title}</span><span>▶</span>`;
-      btn.onclick = () => {
-        lastFocusedIndex = index;
-        openPlayer(epNum);
-      };
-      container.appendChild(btn);
-      buttons.push(btn);
-    });
+    // 1. Zobrazení seznamu seriálů
+    function renderSeries(focusIdx = 0) {
+      currentView = "series";
+      navBackBtn.style.display = "none";
+      pageTitle.textContent = "Moje videotéka";
+      pageSubtitle.textContent = "Vyber seriál ovladačem a stiskni OK";
+      grid.innerHTML = "";
+      focusableElements = [];
 
-    if (buttons.length > 0) buttons[0].focus();
+      SERIES_DATA.forEach((series, index) => {
+        const btn = document.createElement("button");
+        btn.className = "card-btn";
+        const seasonsCount = series.seasons.length;
+        const seasonsLabel = seasonsCount === 1 ? "1 série" : (seasonsCount >= 2 && seasonsCount <= 4 ? `${seasonsCount} série` : `${seasonsCount} sérií`);
+        btn.innerHTML = `
+          <div>
+            <strong>${series.title}</strong>
+            <span class="card-meta">${series.year} • ${seasonsLabel}</span>
+          </div>
+          <span>▶</span>
+        `;
+        btn.onclick = () => {
+          selectedSeriesIndex = index;
+          renderSeasons(0);
+        };
+        grid.appendChild(btn);
+        focusableElements.push(btn);
+      });
 
+      if (focusableElements[focusIdx]) focusableElements[focusIdx].focus();
+    }
+
+    // 2. Zobrazení sérií vybraného seriálu
+    function renderSeasons(focusIdx = 0) {
+      currentView = "seasons";
+      const series = SERIES_DATA[selectedSeriesIndex];
+      navBackBtn.style.display = "inline-block";
+      pageTitle.textContent = series.title;
+      pageSubtitle.textContent = "Vyber sérii ovladačem a stiskni OK";
+      grid.innerHTML = "";
+      focusableElements = [navBackBtn];
+
+      series.seasons.forEach((season, index) => {
+        const btn = document.createElement("button");
+        btn.className = "card-btn";
+        btn.innerHTML = `
+          <div>
+            <strong>${season.seasonNumber}. série</strong>
+            <span class="card-meta">${season.episodes.length} epizod</span>
+          </div>
+          <span>▶</span>
+        `;
+        btn.onclick = () => {
+          selectedSeasonIndex = index;
+          renderEpisodes(0);
+        };
+        grid.appendChild(btn);
+        focusableElements.push(btn);
+      });
+
+      const targetBtn = focusableElements[focusIdx + 1] || focusableElements[0];
+      if (targetBtn) targetBtn.focus();
+    }
+
+    // 3. Zobrazení epizod vybrané série
+    function renderEpisodes(focusIdx = 0) {
+      currentView = "episodes";
+      const series = SERIES_DATA[selectedSeriesIndex];
+      const season = series.seasons[selectedSeasonIndex];
+      navBackBtn.style.display = "inline-block";
+      pageTitle.textContent = `${series.title} – ${season.seasonNumber}. série`;
+      pageSubtitle.textContent = "Vyber epizodu k přehrání";
+      grid.innerHTML = "";
+      focusableElements = [navBackBtn];
+
+      season.episodes.forEach((epTitle, index) => {
+        const epNum = index + 1;
+        const btn = document.createElement("button");
+        btn.className = "card-btn";
+        btn.innerHTML = `
+          <span><span class="ep-num">E${epNum.toString().padStart(2, '0')}</span>${epTitle}</span>
+          <span>▶</span>
+        `;
+        btn.onclick = () => {
+          lastEpisodeIndex = index;
+          openPlayer(series.id, season.seasonNumber, epNum);
+        };
+        grid.appendChild(btn);
+        focusableElements.push(btn);
+      });
+
+      const targetBtn = focusableElements[focusIdx + 1] || focusableElements[0];
+      if (targetBtn) targetBtn.focus();
+    }
+
+    // Návrat o úroveň výš
+    function goBack() {
+      if (currentView === "episodes") {
+        renderSeasons(selectedSeasonIndex);
+      } else if (currentView === "seasons") {
+        renderSeries(selectedSeriesIndex);
+      }
+    }
+
+    // Přehrávač
     function showCloseHintTemporarily() {
       closeHint.classList.remove("hidden");
       if (hideTimeout) clearTimeout(hideTimeout);
@@ -163,8 +346,8 @@
       }, 5000);
     }
 
-    function openPlayer(episode) {
-      frame.src = `https://embedmaster.link/tv/${IMDB_ID}/${SEASON}/${episode}`;
+    function openPlayer(imdbId, seasonNum, episodeNum) {
+      frame.src = `https://embedmaster.link/tv/${imdbId}/${seasonNum}/${episodeNum}${PLAYER_PARAMS}`;
       overlay.style.display = "block";
       showCloseHintTemporarily();
     }
@@ -173,40 +356,79 @@
       if (hideTimeout) clearTimeout(hideTimeout);
       overlay.style.display = "none";
       frame.src = "";
-      if (buttons[lastFocusedIndex]) buttons[lastFocusedIndex].focus();
+      const targetBtn = focusableElements[lastEpisodeIndex + 1] || focusableElements[0];
+      if (targetBtn) targetBtn.focus();
     }
 
-    // Znovu zobrazit při najetí kurzorem do pravého horního rohu nebo stisku klávesy
     topSensor.addEventListener("mousemove", showCloseHintTemporarily);
     topSensor.addEventListener("mouseenter", showCloseHintTemporarily);
     window.addEventListener("mousemove", showCloseHintTemporarily);
 
+    // Ovládání šipkami a tlačítkem Zpět na Samsung ovladači
     document.addEventListener("keydown", (e) => {
+      const isBackKey = (e.keyCode === 10009 || e.key === "Escape" || e.key === "Backspace");
+
+      // Pokud běží přehrávač
       if (overlay.style.display === "block") {
-        // Tlačítko Zpět na Samsung Tizen (10009) nebo Escape
-        if (e.keyCode === 10009 || e.key === "Escape" || e.key === "Backspace") {
+        if (isBackKey) {
           e.preventDefault();
           closePlayer();
           return;
         }
-        // Jakékoliv jiné tlačítko na ovladači znovu ukáže tlačítko Zavřít na 5s
         showCloseHintTemporarily();
         return;
       }
 
-      const activeIndex = buttons.indexOf(document.activeElement);
-      if (activeIndex === -1) return;
+      // Návrat v menu přes tlačítko Zpět na ovladači
+      if (isBackKey && currentView !== "series") {
+        e.preventDefault();
+        goBack();
+        return;
+      }
 
-      if (e.key === "ArrowRight" && activeIndex + 1 < buttons.length) {
-        buttons[activeIndex + 1].focus();
-      } else if (e.key === "ArrowLeft" && activeIndex - 1 >= 0) {
-        buttons[activeIndex - 1].focus();
-      } else if (e.key === "ArrowDown" && activeIndex + 2 < buttons.length) {
-        buttons[activeIndex + 2].focus();
-      } else if (e.key === "ArrowUp" && activeIndex - 2 >= 0) {
-        buttons[activeIndex - 2].focus();
+      const activeIndex = focusableElements.indexOf(document.activeElement);
+      if (activeIndex === -1) {
+        if (focusableElements.length > 0) focusableElements[0].focus();
+        return;
+      }
+
+      const hasBackBtn = (currentView !== "series");
+
+      if (!hasBackBtn) {
+        if (e.key === "ArrowRight" && activeIndex + 1 < focusableElements.length) {
+          focusableElements[activeIndex + 1].focus();
+        } else if (e.key === "ArrowLeft" && activeIndex - 1 >= 0) {
+          focusableElements[activeIndex - 1].focus();
+        } else if (e.key === "ArrowDown" && activeIndex + 2 < focusableElements.length) {
+          focusableElements[activeIndex + 2].focus();
+        } else if (e.key === "ArrowUp" && activeIndex - 2 >= 0) {
+          focusableElements[activeIndex - 2].focus();
+        }
+      } else {
+        if (activeIndex === 0) {
+          if (e.key === "ArrowDown" && focusableElements.length > 1) {
+            focusableElements[1].focus();
+          }
+        } else {
+          if (e.key === "ArrowRight" && activeIndex + 1 < focusableElements.length) {
+            focusableElements[activeIndex + 1].focus();
+          } else if (e.key === "ArrowLeft") {
+            if (activeIndex > 1) focusableElements[activeIndex - 1].focus();
+          } else if (e.key === "ArrowDown" && activeIndex + 2 < focusableElements.length) {
+            focusableElements[activeIndex + 2].focus();
+          } else if (e.key === "ArrowUp") {
+            if (activeIndex - 2 >= 1) {
+              focusableElements[activeIndex - 2].focus();
+            } else {
+              focusableElements[0].focus();
+            }
+          }
+        }
       }
     });
+
+    // Spuštění na úvodní obrazovce
+    renderSeries(0);
   </script>
 </body>
 </html>
