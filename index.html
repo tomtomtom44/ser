@@ -31,7 +31,7 @@
       position: relative;
     }
 
-    /* Dynamické rozostřené pozadí podle vybraného seriálu */
+    /* Dynamické rozostřené pozadí podle vybraného titulu */
     #backdrop-layer {
       position: fixed;
       inset: 0;
@@ -126,7 +126,7 @@
       transform: translateY(-2px);
     }
 
-    /* Mřížka seriálů s plakáty */
+    /* Mřížka titulů s plakáty */
     .series-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -196,6 +196,21 @@
       border-radius: 8px;
     }
 
+    .collection-pill {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      background: rgba(229, 9, 20, 0.88);
+      backdrop-filter: blur(8px);
+      color: #fff;
+      font-weight: 700;
+      font-size: 12px;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
     .series-info {
       padding: 16px 20px 20px;
       margin-top: -28px;
@@ -218,7 +233,7 @@
       gap: 8px;
     }
 
-    /* Hlavička detailu seriálu (při výběru série / epizody) */
+    /* Hlavička detailu seriálu / kolekce */
     .detail-banner {
       display: flex;
       align-items: center;
@@ -254,7 +269,7 @@
       max-width: 900px;
     }
 
-    /* Mřížka sérií a epizod */
+    /* Mřížka sérií, epizod a filmů v kolekci */
     .items-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
@@ -275,6 +290,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 16px;
       transition: all 0.16s ease;
     }
 
@@ -398,7 +414,7 @@
             <span class="brand-badge">TV STREAM</span>
             <h1 id="page-title">Moje videotéka</h1>
           </div>
-          <p class="subtitle" id="page-subtitle">Vyber seriál ovladačem a stiskni OK</p>
+          <p class="subtitle" id="page-subtitle">Vyber seriál nebo filmovou sbírku ovladačem a stiskni OK</p>
         </div>
       </div>
     </div>
@@ -417,11 +433,12 @@
     const PLAYER_PARAMS = "?skin=onyx&welcome_page=off&autoplay=on";
 
     // =========================================================================
-    // DATABÁZE SERIÁLŮ (včetně oficiálních náhledových plakátů)
+    // DATABÁZE SERIÁLŮ A FILMOVÝCH KOLEKCÍ
     // =========================================================================
     const SERIES_DATA = [
       {
         id: "tt14164730",
+        type: "series",
         title: "Dexter: New Blood",
         year: "2021–2022",
         rating: "8.0",
@@ -449,6 +466,7 @@
       },
       {
         id: "tt17220216",
+        type: "series",
         title: "Monarch: Legacy of Monsters",
         year: "2023–2026",
         rating: "7.4",
@@ -488,6 +506,44 @@
             ]
           }
         ]
+      },
+      {
+        id: "bond-collection",
+        type: "collection",
+        title: "James Bond 007 – Kompletní sbírka",
+        year: "1962–2021",
+        rating: "7.8",
+        genre: "Akční • Špionážní • Dobrodružný",
+        description: "Kompletní sbírka všech 25 oficiálních filmů o britském tajném agentovi 007 z produkce Eon Productions – od prvního Dr. No se Seanem Connerym až po Není čas zemřít s Danielem Craigem.",
+        poster: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 500 750'><defs><radialGradient id='bg' cx='50%' cy='42%' r='65%'><stop offset='0%' stop-color='%232b303a'/><stop offset='55%' stop-color='%2311141a'/><stop offset='100%' stop-color='%23050608'/></radialGradient><linearGradient id='silver' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' stop-color='%23ffffff'/><stop offset='45%' stop-color='%23d1d5db'/><stop offset='55%' stop-color='%239ca3af'/><stop offset='100%' stop-color='%23f3f4f6'/></linearGradient></defs><rect width='500' height='750' fill='url(%23bg)'/><g fill='none' stroke='%23ffffff' stroke-opacity='0.07' stroke-width='2'><circle cx='250' cy='310' r='220'/><circle cx='250' cy='310' r='180'/><circle cx='250' cy='310' r='140'/></g><path d='M250,90 C310,140 340,210 330,310 M410,160 C380,230 330,280 250,310 M460,310 C390,340 320,340 250,310 M410,460 C340,430 290,380 250,310 M250,530 C190,480 160,410 170,310 M90,460 C120,390 170,340 250,310 M40,310 C110,280 180,280 250,310 M90,160 C160,190 210,240 250,310' stroke='%23ffffff' stroke-opacity='0.08' stroke-width='18' fill='none'/><circle cx='250' cy='310' r='115' fill='%2307090d' stroke='url(%23silver)' stroke-width='4'/><text x='232' y='336' text-anchor='middle' font-family='Arial Black, Impact, sans-serif' font-weight='900' font-size='84' letter-spacing='-3' fill='url(%23silver)'>007</text><path d='M322,282 L392,282 L392,295 L355,295 L350,308 L334,308 L338,295 L322,295 Z' fill='url(%23silver)'/><rect x='314' y='285' width='10' height='7' fill='url(%23silver)'/><text x='250' y='475' text-anchor='middle' font-family='Helvetica Neue, Arial, sans-serif' font-weight='700' font-size='22' letter-spacing='10' fill='%23e5e7eb'>JAMES BOND</text><line x1='150' y1='495' x2='350' y2='495' stroke='%23e50914' stroke-width='3'/><text x='250' y='524' text-anchor='middle' font-family='Helvetica Neue, Arial, sans-serif' font-weight='600' font-size='13' letter-spacing='4' fill='%239ca3af'>COMPLETE COLLECTION</text></svg>",
+        fallbackPoster: "",
+        movies: [
+          { id: "tt0055928", title: "Dr. No", year: "1962", actor: "Sean Connery" },
+          { id: "tt0057076", title: "From Russia with Love", year: "1963", actor: "Sean Connery" },
+          { id: "tt0058150", title: "Goldfinger", year: "1964", actor: "Sean Connery" },
+          { id: "tt0059800", title: "Thunderball", year: "1965", actor: "Sean Connery" },
+          { id: "tt0062512", title: "You Only Live Twice", year: "1967", actor: "Sean Connery" },
+          { id: "tt0064757", title: "On Her Majesty's Secret Service", year: "1969", actor: "George Lazenby" },
+          { id: "tt0066995", title: "Diamonds Are Forever", year: "1971", actor: "Sean Connery" },
+          { id: "tt0070328", title: "Live and Let Die", year: "1973", actor: "Roger Moore" },
+          { id: "tt0071807", title: "The Man with the Golden Gun", year: "1974", actor: "Roger Moore" },
+          { id: "tt0076752", title: "The Spy Who Loved Me", year: "1977", actor: "Roger Moore" },
+          { id: "tt0079574", title: "Moonraker", year: "1979", actor: "Roger Moore" },
+          { id: "tt0082398", title: "For Your Eyes Only", year: "1981", actor: "Roger Moore" },
+          { id: "tt0086034", title: "Octopussy", year: "1983", actor: "Roger Moore" },
+          { id: "tt0090264", title: "A View to a Kill", year: "1985", actor: "Roger Moore" },
+          { id: "tt0093428", title: "The Living Daylights", year: "1987", actor: "Timothy Dalton" },
+          { id: "tt0097742", title: "Licence to Kill", year: "1989", actor: "Timothy Dalton" },
+          { id: "tt0113189", title: "GoldenEye", year: "1995", actor: "Pierce Brosnan" },
+          { id: "tt0120347", title: "Tomorrow Never Dies", year: "1997", actor: "Pierce Brosnan" },
+          { id: "tt0143145", title: "The World Is Not Enough", year: "1999", actor: "Pierce Brosnan" },
+          { id: "tt0246460", title: "Die Another Day", year: "2002", actor: "Pierce Brosnan" },
+          { id: "tt0381061", title: "Casino Royale", year: "2006", actor: "Daniel Craig" },
+          { id: "tt0830515", title: "Quantum of Solace", year: "2008", actor: "Daniel Craig" },
+          { id: "tt1074638", title: "Skyfall", year: "2012", actor: "Daniel Craig" },
+          { id: "tt2379713", title: "Spectre", year: "2015", actor: "Daniel Craig" },
+          { id: "tt2382320", title: "No Time to Die", year: "2021", actor: "Daniel Craig" }
+        ]
       }
     ];
 
@@ -502,10 +558,11 @@
     const closeHint = document.getElementById("close-hint");
     const topSensor = document.getElementById("top-sensor");
 
+    // Stav navigace: 'series' -> 'seasons' -> 'episodes' nebo 'collection'
     let currentView = "series";
     let selectedSeriesIndex = 0;
     let selectedSeasonIndex = 0;
-    let lastEpisodeIndex = 0;
+    let lastItemIndex = 0;
 
     let focusableElements = [];
     let hideTimeout = null;
@@ -513,7 +570,7 @@
 
     function updateBackdrop(imageUrl) {
       if (imageUrl) {
-        backdropLayer.style.backgroundImage = `url('${imageUrl}')`;
+        backdropLayer.style.backgroundImage = `url("${imageUrl}")`;
         backdropLayer.style.opacity = "0.32";
       } else {
         backdropLayer.style.opacity = "0";
@@ -526,45 +583,59 @@
       gridColumns = cols > 0 ? cols : 2;
     }
 
-    // 1. Zobrazení seznamu seriálů s plakáty
+    // 1. Zobrazení hlavní stránky s plakáty (seriály + filmové kolekce)
     function renderSeries(focusIdx = 0) {
       currentView = "series";
       navBackBtn.style.display = "none";
       detailBannerContainer.innerHTML = "";
       pageTitle.textContent = "Moje videotéka";
-      pageSubtitle.textContent = "Vyber seriál ovladačem a stiskni OK";
+      pageSubtitle.textContent = "Vyber seriál nebo filmovou sbírku ovladačem a stiskni OK";
       grid.className = "series-grid";
       grid.innerHTML = "";
       focusableElements = [];
 
-      SERIES_DATA.forEach((series, index) => {
+      SERIES_DATA.forEach((item, index) => {
         const btn = document.createElement("button");
         btn.className = "series-card";
-        const seasonsCount = series.seasons.length;
-        const seasonsLabel = seasonsCount === 1 ? "1 série" : (seasonsCount >= 2 && seasonsCount <= 4 ? `${seasonsCount} série` : `${seasonsCount} sérií`);
-        const onerrorAttr = series.fallbackPoster ? `onerror="this.onerror=null;this.src='${series.fallbackPoster}';"` : "";
+
+        let countLabel = "";
+        let badgeHtml = "";
+        if (item.type === "collection") {
+          countLabel = `${item.movies.length} filmů`;
+          badgeHtml = `<span class="collection-pill">Kolekce</span>`;
+        } else {
+          const seasonsCount = item.seasons.length;
+          countLabel = seasonsCount === 1 ? "1 série" : (seasonsCount >= 2 && seasonsCount <= 4 ? `${seasonsCount} série` : `${seasonsCount} sérií`);
+        }
+
+        const onerrorAttr = item.fallbackPoster ? `onerror="this.onerror=null;this.src='${item.fallbackPoster}';"` : "";
 
         btn.innerHTML = `
           <div class="poster-wrapper">
-            <img src="${series.poster}" ${onerrorAttr} alt="${series.title}" loading="lazy">
+            <img src="${item.poster}" ${onerrorAttr} alt="${item.title}" loading="lazy">
             <div class="poster-overlay"></div>
-            ${series.rating ? `<span class="rating-pill">★ ${series.rating}</span>` : ""}
+            ${badgeHtml}
+            ${item.rating ? `<span class="rating-pill">★ ${item.rating}</span>` : ""}
           </div>
           <div class="series-info">
-            <div class="series-title">${series.title}</div>
+            <div class="series-title">${item.title}</div>
             <div class="series-meta">
-              <span>${series.year}</span>
+              <span>${item.year}</span>
               <span>•</span>
-              <span>${seasonsLabel}</span>
+              <span>${countLabel}</span>
             </div>
           </div>
         `;
 
-        btn.onfocus = () => updateBackdrop(series.poster);
-        btn.onmouseenter = () => updateBackdrop(series.poster);
+        btn.onfocus = () => updateBackdrop(item.poster);
+        btn.onmouseenter = () => updateBackdrop(item.poster);
         btn.onclick = () => {
           selectedSeriesIndex = index;
-          renderSeasons(0);
+          if (item.type === "collection") {
+            renderCollection(0);
+          } else {
+            renderSeasons(0);
+          }
         };
 
         grid.appendChild(btn);
@@ -578,21 +649,62 @@
       }
     }
 
-    function renderDetailBanner(series) {
-      const onerrorAttr = series.fallbackPoster ? `onerror="this.onerror=null;this.src='${series.fallbackPoster}';"` : "";
+    function renderDetailBanner(item) {
+      const onerrorAttr = item.fallbackPoster ? `onerror="this.onerror=null;this.src='${item.fallbackPoster}';"` : "";
       detailBannerContainer.innerHTML = `
         <div class="detail-banner">
-          <img class="detail-poster" src="${series.poster}" ${onerrorAttr} alt="${series.title}">
+          <img class="detail-poster" src="${item.poster}" ${onerrorAttr} alt="${item.title}">
           <div class="detail-text">
-            <h2>${series.title} <span style="font-size: 17px; color: #9ca3af; font-weight: normal;">(${series.year})</span></h2>
-            <p style="color: #fbbf24; font-size: 14px; font-weight: 600; margin-bottom: 8px;">★ ${series.rating} &nbsp;•&nbsp; <span style="color: #d1d5db;">${series.genre}</span></p>
-            <p>${series.description}</p>
+            <h2>${item.title} <span style="font-size: 17px; color: #9ca3af; font-weight: normal;">(${item.year})</span></h2>
+            <p style="color: #fbbf24; font-size: 14px; font-weight: 600; margin-bottom: 8px;">★ ${item.rating} &nbsp;•&nbsp; <span style="color: #d1d5db;">${item.genre}</span></p>
+            <p>${item.description}</p>
           </div>
         </div>
       `;
     }
 
-    // 2. Zobrazení sérií vybraného seriálu
+    // 2A. Zobrazení filmů ve sbírce (např. James Bond)
+    function renderCollection(focusIdx = 0) {
+      currentView = "collection";
+      const collection = SERIES_DATA[selectedSeriesIndex];
+      updateBackdrop(collection.poster);
+      navBackBtn.style.display = "inline-flex";
+      pageTitle.textContent = collection.title;
+      pageSubtitle.textContent = "Vyber film ze sbírky k přehrání";
+      renderDetailBanner(collection);
+
+      grid.className = "items-grid";
+      grid.innerHTML = "";
+      focusableElements = [navBackBtn];
+
+      collection.movies.forEach((movie, index) => {
+        const movieNum = index + 1;
+        const btn = document.createElement("button");
+        btn.className = "item-btn";
+        btn.innerHTML = `
+          <div class="item-left">
+            <span class="ep-badge">#${movieNum.toString().padStart(2, '0')}</span>
+            <div>
+              <strong>${movie.title}</strong>
+              <span class="card-meta">${movie.year} • ${movie.actor}</span>
+            </div>
+          </div>
+          <div class="play-icon">▶</div>
+        `;
+        btn.onclick = () => {
+          lastItemIndex = index;
+          openMoviePlayer(movie.id);
+        };
+        grid.appendChild(btn);
+        focusableElements.push(btn);
+      });
+
+      calculateGridColumns();
+      const targetBtn = focusableElements[focusIdx + 1] || focusableElements[0];
+      if (targetBtn) targetBtn.focus();
+    }
+
+    // 2B. Zobrazení sérií vybraného seriálu
     function renderSeasons(focusIdx = 0) {
       currentView = "seasons";
       const series = SERIES_DATA[selectedSeriesIndex];
@@ -656,8 +768,8 @@
           <div class="play-icon">▶</div>
         `;
         btn.onclick = () => {
-          lastEpisodeIndex = index;
-          openPlayer(series.id, season.seasonNumber, epNum);
+          lastItemIndex = index;
+          openTvPlayer(series.id, season.seasonNumber, epNum);
         };
         grid.appendChild(btn);
         focusableElements.push(btn);
@@ -671,7 +783,7 @@
     function goBack() {
       if (currentView === "episodes") {
         renderSeasons(selectedSeasonIndex);
-      } else if (currentView === "seasons") {
+      } else if (currentView === "seasons" || currentView === "collection") {
         renderSeries(selectedSeriesIndex);
       }
     }
@@ -684,8 +796,14 @@
       }, 5000);
     }
 
-    function openPlayer(imdbId, seasonNum, episodeNum) {
+    function openTvPlayer(imdbId, seasonNum, episodeNum) {
       frame.src = `https://embedmaster.link/tv/${imdbId}/${seasonNum}/${episodeNum}${PLAYER_PARAMS}`;
+      overlay.style.display = "block";
+      showCloseHintTemporarily();
+    }
+
+    function openMoviePlayer(imdbId) {
+      frame.src = `https://embedmaster.link/movie/${imdbId}${PLAYER_PARAMS}`;
       overlay.style.display = "block";
       showCloseHintTemporarily();
     }
@@ -694,7 +812,7 @@
       if (hideTimeout) clearTimeout(hideTimeout);
       overlay.style.display = "none";
       frame.src = "";
-      const targetBtn = focusableElements[lastEpisodeIndex + 1] || focusableElements[0];
+      const targetBtn = focusableElements[lastItemIndex + 1] || focusableElements[0];
       if (targetBtn) targetBtn.focus();
     }
 
