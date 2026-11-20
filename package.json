@@ -2,8 +2,8 @@
   "name": "serosefix",
   "version": "1.0.0",
   "description": "Serosefix Player",
-  "main": "index.html",
   "packageType": "website",
   "appName": "Serosefix",
+  "websiteURL": "https://tomtomtom44.github.io/ser/",
   "appPath": "https://tomtomtom44.github.io/ser/"
 }
