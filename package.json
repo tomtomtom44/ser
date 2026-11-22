@@ -1,9 +1,17 @@
 {
-  "name": "serosefix",
+  "name": "ser",
   "version": "1.0.0",
   "description": "Serosefix Player",
-  "packageType": "website",
+  "packageType": "mods",
   "appName": "Serosefix",
   "websiteURL": "https://tomtomtom44.github.io/ser/",
-  "appPath": "https://tomtomtom44.github.io/ser/"
+  "main": "main.js",
+  "keys": [
+    "MediaPlay",
+    "MediaPause",
+    "MediaPlayPause",
+    "MediaStop",
+    "MediaRewind",
+    "MediaFastForward"
+  ]
 }
